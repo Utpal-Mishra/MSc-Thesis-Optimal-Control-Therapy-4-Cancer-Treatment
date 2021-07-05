@@ -1,0 +1,91 @@
+---
+title: "Research Data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## **Task 1**
+
+```{r}
+setwd("E:/UCD/R//Research")
+library(readr)
+stats <- read_csv("patient.csv")
+cat("Dimension of Data: ",dim(stats), "\n")
+
+head(stats) #View(stats)
+
+stats <- stats[1:33, ]
+stats$`BCR-ABL% Values` <- log(stats$`BCR-ABL% Values`)
+```
+
+**LOESS REGRESSION**
+
+```{r}
+#library("scales")
+
+#plot.new()
+#plot(stats$`Imatinib Months`, stats$`BCR-ABL% Values`) 
+#lines(lowess(stats$`Imatinib Months` ~ stats$`BCR-ABL% Values`, f = 1))
+
+#plot(stats$`Imatinib Months`, log(stats$`BCR-ABL% Values`))
+#lowess.model <- lowess(stats$`BCR-ABL% Values` ~ stats$`Imatinib Months`)
+#plot(lowess.model, col = "red", pch = 19)
+
+#par(mfrow = c(1, 2))
+#plot(stats$`Imatinib Months`, rescale(stats$`BCR-ABL% Values`, to = c(-3, 3)), col = "red", pch  = 19) 
+#lines(lowess(rescale(stats$`BCR-ABL% Values`, to = c(-3, 3)) ~ stats$`Imatinib Months`, f = 1.5), col = "blue", lwd = 2)
+#line(lowess.model)
+#ggplot(stats, aes(x = `Imatinib Months`, y = `BCR-ABL% Values`)) + geom_point() + geom_smooth(method = "loess")
+
+par(mfrow = c(1,2))
+plot(stats$`Imatinib Months`, rescale(stats$`BCR-ABL% Values`, to = c(-3, 3)), col = "red", pch  = 19) 
+lowess.model <- lowess(rescale(stats$`BCR-ABL% Values`, to = c(-3, 3)) ~ stats$`Imatinib Months`, f = 0.5)
+lines(lowess.model, col = "blue", lwd = 2)
+```
+
+
+**LINEAR REGRESSION**
+
+```{r}
+
+par(mfrow = c(1, 2))
+plot(stats$`Imatinib Months`, rescale(stats$`BCR-ABL% Values`, to = c(-3, 3)), col = "red", pch  = 19) 
+
+lm.model <- lm(rescale(stats$`BCR-ABL% Values`, to = c(-3, 3)) ~ stats$`Imatinib Months`)
+lines(stats$`Imatinib Months`, fitted(lm.model))
+```
+
+
+**NLR**
+
+```{r}
+library(nls)
+
+par(mfrow = c(1, 2))
+plot(stats$`Imatinib Months`, rescale(stats$`BCR-ABL% Values`, to = c(-3, 3)), col = "red", pch  = 19) 
+
+nls.model <- nls(rescale(stats$`BCR-ABL% Values`, to = c(-3, 3)) ~ stats$`Imatinib Months`)
+lines(stats$`Imatinib Months`, fitted(nls.model))
+```
+
+
+**DRC**
+
+```{r}
+library(drc)
+
+par(mfrow = c(1, 2))
+plot(stats$`Imatinib Months`, rescale(stats$`BCR-ABL% Values`, to = c(-3, 3)), 
+     xlab = "Imatinib Months", ylab = "BCR-ABL% Values", 
+     col = "red", pch  = 19)
+lines(lowess(stats$`Imatinib Months`, rescale(stats$`BCR-ABL% Values`, to = c(-3, 3)), f=1))
+
+
+drm.model <- drm(stats$`BCR-ABL% Values` ~ stats$`Imatinib Months`, data = stats, fct = LL.5())
+plot(drm.model, xlab = "Imatinib Months", ylab = "BCR-ABL% Values",
+     col = "red", pch  = 19)
+lines(stats$`Imatinib Months`, fitted(drm.model))
+```
